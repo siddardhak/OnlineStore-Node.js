@@ -201,11 +201,23 @@ form {
   border-radius: 3px;
   cursor: pointer;
 }
+.btn1 {
+  text-decoration: none;
+  border: none;
+  font: inherit;
+  background-color: #00695c;
+  color: white;
+}
 
 .btn:hover,
 .btn:active {
   background-color: #00695c;
   color: white;
+}
+
+.btn1:hover,
+.btn1.active{
+  color: #ffeb3b;
 }
 
 .btn.danger {

@@ -4,6 +4,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+require('dotenv').config()
+
 const session = require('express-session');
 
 const errorController = require('./controllers/error');
@@ -14,10 +16,9 @@ const MongoDbStore = require('connect-mongodb-session')(session);
 
 const app = express();
 
-const MongoDbUri = '';
 
 const store = new MongoDbStore({
-  uri: MongoDbUri,
+  uri: process.env.MONGOURI,
   collection: 'sessions'
 });
 
@@ -32,14 +33,7 @@ app.use(session({ secret: 'my secret', resave: false, saveUninitialized: false, 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use((req, res, next) => {
-  User.findById('5ec9caf2ec276a0479b923b5')
-    .then(user => {
-      req.user = user
-      next();
-    })
-    .catch(err => console.log(err));
-});
+
 
 
 app.use('/admin', adminRoutes);
@@ -51,7 +45,7 @@ app.use(errorController.get404);
 
 mongoose
   .connect(
-    MongoDbUri
+    process.env.MONGOURI
   )
   .then(result => {
     User.find().then(user => {
