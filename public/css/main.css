@@ -240,3 +240,20 @@ form {
     display: none;
   }
 }
+.errormessage{
+  color: red;
+  font-style: italic;
+}
+.restpassword{
+  color:green;
+  font-style: normal;
+  text-decoration: none;
+  border: 1px solid green;
+  display: inline;
+  border-radius: 2px;
+}
+
+.centered .restpassword{
+  width: 20px;
+}
+

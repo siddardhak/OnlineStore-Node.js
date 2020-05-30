@@ -5,9 +5,8 @@
 <body>
     <%- include('../includes/navigation.ejs') %>
     <main>
-        <h1 style="text-align: center;">Login</h1>
-
-        <form class="login-form" action="/login" method="POST">
+        <h1 style="text-align: center;">Signup</h1>
+        <form class="login-form" action="/signup" method="POST">
             <div class="form-control">
                 <label for="email">Email</label>
                 <input type="email" name="email" id="email">
@@ -16,14 +15,15 @@
                 <label for="password">Password</label>
                 <input type="password" name="password" id="password">
             </div>
-            <input type="hidden" name="_csrf" value='<%= csrfToken %>'>
+            <div class="form-control">
+                <label for="password">Confirm Password</label>
+                <input type="password" name="confirmpassword" id="confirmpassword">
+            </div>
             <% if(errorMessage) { %>
             <p class='errormessage'><%= errorMessage %></p>
             <% } %>
-            <button class="btn" type="submit">Login</button>
+            <input type="hidden" name="_csrf" value='<%= csrfToken %>'>
+            <button class="btn" type="submit">Signup</button>
         </form>
-        <div class="centered">
-            <a href="/resetpassword" class="btn">Reset Password</a>
-        </div>
     </main>
     <%- include('../includes/end.ejs') %>
