@@ -181,3 +181,88 @@ exports.postResetPassword = (req, res, next) => {
     })
 
 }
+
+exports.getNewPasswordPage = (req, res, next) => {
+    const token = req.params.token
+    if (token) {
+        console.log(req.params.token)
+        User.findOne({
+            resetToken: token, resetTokenExpire: {
+                $gt: Date.now()
+            }
+        }).then(user => {
+            if (user) {
+                let message = req.flash('errorMessage');
+                if (message.length > 0) {
+                    message = message[0]
+                }
+                else message = null;
+                res.render('auth/new-password', {
+                    pageTitle: 'Change Password',
+                    path: '/newpassword',
+                    errorMessage: message,
+                    userid: user._id.toString(),
+                    passwordToken: token,
+                })
+            }
+            else {
+                console.log('Link expired')
+                return res.redirect('/login')
+            }
+
+        }).catch(err => {
+            console.log(err)
+        })
+    }
+    else {
+        console.log('This Url expired')
+    }
+}
+
+exports.postChangePassword = (req, res, next) => {
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmpassword;
+    const userid = req.body.userid;
+    const passwordToken = req.body.passwordresetToken;
+    let resetUser;
+    User.findOne({
+        _id: userid, resetToken: passwordToken, resetTokenExpire: {
+            $gt: Date.now()
+        }
+    }).then(user => {
+        if (user) {
+            resetUser = user;
+            return bcrypt.hash(password, 12).then(hashedPassword => {
+                resetUser.password = hashedPassword;
+                resetUser.resetToken = undefined;
+                resetUser.resetTokenExpire = undefined;
+
+                return resetUser.save().then(result => {
+                    console.log('successfully updated');
+                    res.redirect('/login');
+
+                    return transporter.sendMail({
+                        to: resetUser.email,
+                        from: process.env.FROMADDRESS,
+                        subject: 'Password Reset Successful',
+                        html: `<p>You have successfully reset your ToyStore password</p>`
+                    }).then(result => {
+
+                    }).catch(err => {
+                        console.log(err)
+                    })
+
+                }).catch(err => {
+                    console.log(err)
+                })
+            })
+        }
+        else {
+            console.log('user didnt existed');
+            return res.redirect('/login')
+        }
+
+    }).catch(err => {
+        console.log(err)
+    })
+}

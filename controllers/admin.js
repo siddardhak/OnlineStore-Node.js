@@ -1,7 +1,7 @@
 const Product = require('../models/product');
 
-exports.getAddProduct = (req, res, next) => {
 
+exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
     pageTitle: 'Add Product',
     path: '/admin/add-product',
@@ -37,24 +37,31 @@ exports.postAddProduct = (req, res, next) => {
 
 exports.getEditProduct = (req, res, next) => {
 
+
   const editMode = req.query.edit;
   if (!editMode) {
     return res.redirect('/');
   }
   const prodId = req.params.productId;
+
   Product.findById(prodId)
     // Product.findById(prodId)
     .then(product => {
       if (!product) {
         return res.redirect('/');
       }
-      res.render('admin/edit-product', {
-        pageTitle: 'Edit Product',
-        path: '/admin/edit-product',
-        editing: editMode,
-        product: product,
+      if (product.userid.toString() === req.user._id.toString()) {
+        res.render('admin/edit-product', {
+          pageTitle: 'Edit Product',
+          path: '/admin/edit-product',
+          editing: editMode,
+          product: product,
 
-      });
+        });
+      }
+      else {
+        return res.redirect('/admin/products')
+      }
     })
     .catch(err => console.log(err));
 };
@@ -67,15 +74,16 @@ exports.postEditProduct = (req, res, next) => {
   const updatedImageUrl = req.body.imageUrl;
   const updatedDesc = req.body.description;
   Product.findById(prodId).then(product => {
-    product.title = updatedTitle;
-    product.description = updatedDesc;
-    product.imageUrl = updatedImageUrl;
-    product.price = updatedPrice;
-    return product
-      .save()
+    if (product.userid.toString() === req.user._id.toString()) {
+      product.title = updatedTitle;
+      product.description = updatedDesc;
+      product.imageUrl = updatedImageUrl;
+      product.price = updatedPrice;
+      return product
+        .save()
+    }
   })
     .then(result => {
-      console.log('UPDATED PRODUCT!');
       res.redirect('/admin/products');
     })
     .catch(err => console.log(err));
@@ -84,7 +92,7 @@ exports.postEditProduct = (req, res, next) => {
 exports.getProducts = (req, res, next) => {
 
   // select method gets data for those values you can eliminate _id using - sign Ex:  Product.find().select('title price -_id').populate('userid')
-  Product.find()
+  Product.find({ userid: req.user._id })
     .then(products => {
       res.render('admin/products', {
         prods: products,
@@ -92,6 +100,7 @@ exports.getProducts = (req, res, next) => {
         path: '/admin/products',
 
       });
+
     })
     .catch(err => console.log(err));
 };
@@ -99,10 +108,20 @@ exports.getProducts = (req, res, next) => {
 exports.postDeleteProduct = (req, res, next) => {
 
   const prodId = req.body.productId;
-  Product.findByIdAndRemove(prodId)
-    .then(() => {
-      console.log('DESTROYED PRODUCT');
-      res.redirect('/admin/products');
-    })
-    .catch(err => console.log(err));
+  Product.findById(prodId).then(product => {
+    if (product.userid.toString() === req.user._id.toString()) {
+      Product.findByIdAndRemove(prodId)
+        .then(() => {
+          console.log('DESTROYED PRODUCT');
+          res.redirect('/admin/products');
+        })
+        .catch(err => console.log(err));
+    }
+    else {
+      return res.redirect('/admin/products')
+    }
+  }).catch(err => {
+    console.log(err)
+  })
+
 };
